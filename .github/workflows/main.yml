@@ -9,11 +9,17 @@ jobs:
     steps:
       - name: Install Linux Dependencies
         run: |
+          sudo apt update
+          sudo apt install gperf
           /usr/bin/Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
 
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          submodules: recursive
 
       - name: Bootstrap
-        run: |
-          ./bootstrap.sh
+        run: ./bootstrap.sh
+
+      - name: Build
+        run: ./build.sh
