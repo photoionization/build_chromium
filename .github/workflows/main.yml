@@ -1,0 +1,19 @@
+name: chromium
+
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: Install Linux Dependencies
+        run: |
+          /usr/bin/Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Bootstrap
+        run: |
+          ./bootstrap.sh
