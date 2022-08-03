@@ -1,8 +1,18 @@
 VERSION=103.0.5060.134
 
+SCRIPT_PATH="$(cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P)"
+
+if [ -d src ]; then
+  echo 'src already exists'.
+  exit 1
+fi
+
 set -e           # exit when command fails
 set -o pipefail  # exit when pipe fails
 set -x           # print running command
+
+# Same steps with
+# https://source.chromium.org/chromium/infra/infra/+/main:recipes/recipes/build_from_tarball.py
 
 # Download source tarball.
 CHROMIUM_URL=https://commondatastorage.googleapis.com/chromium-browser-official/chromium-$VERSION.tar.xz
@@ -20,3 +30,28 @@ cd src
 
 # Download nodejs.
 ./third_party/node/update_node_binaries
+
+# PATH for ninja and clang.
+PATH=$SCRIPT_PATH/depot_tools:$PATH
+PATH=$SCRIPT_PATH/src/third_party/llvm-build/Release+Asserts/bin:$PATH
+
+GN_ARGS="is_debug=false
+         enable_nacl=false
+         use_sysroot=true
+         is_official_build=true
+         enable_distro_version_check=false
+         use_system_libjpeg=true
+         use_v8_context_snapshot=false"
+
+# Fix "AssertionError: java only allowed in android builds"
+GN_ARGS="$GN_ARGS enable_js_type_check=false"
+
+# Use ccache.
+GN_ARGS="$GN_ARGS cc_wrapper=\"env CCACHE_SLOPPINESS=time_macros ccache\""
+
+# Bootstrap gn.
+./tools/gn/bootstrap/bootstrap.py --gn-gen-args="$GN_ARGS"
+
+# Unbundle libraries.
+UNBUNDLE_LIBS="fontconfig freetype libdrm libjpeg libwebp opus snappy"
+./build/linux/unbundle/replace_gn_files.py --system-libraries $UNBUNDLE_LIBS
