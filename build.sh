@@ -17,7 +17,8 @@ GN_ARGS="is_debug=false
          is_official_build=true
          enable_distro_version_check=false
          use_system_libjpeg=true
-         use_v8_context_snapshot=false"
+         use_v8_context_snapshot=false
+         cc_wrapper=\"env CCACHE_SLOPPINESS=time_macros ccache\""
 UNBUNDLE_LIBS="fontconfig
                freetype
                libdrm
