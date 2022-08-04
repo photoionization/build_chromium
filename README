@@ -3,12 +3,15 @@ Bootstrap environment for building Chromium on Linux.
 This project is useful when you want to quickly setup an CI environment
 for building Chromium. The source code of Chromium is downloaded via offical
 source tarball so the slow "gclient sync" is avoided. The downside with
-this approach is the source tarball can only be used to build for Linux
-targets.
+this approach is the source tarball can only be used for building on Linux.
 
 Supporting Windows and macOS is possible but we need to generate a source
 tarball that works for all platforms, anyone interested should try to bring
 life back to this project first:
 https://github.com/zcbenz/chromium-source-tarball.
+
+Note that a fresh build would take more time than the limitation of GitHub
+Actions, but with ccache we can cache the build results and rerunning the CI
+job for one or two times can reduce the build time to a reasonable time.
 
 Code are published under public domain.
