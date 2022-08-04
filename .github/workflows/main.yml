@@ -7,6 +7,11 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
+      - name: Clear Space
+        run: |
+          sudo rm -rf /usr/share/dotnet/ /usr/local/lib/android /var/lib/docker /opt/ghc
+          df -h $GITHUB_WORKSPACE
+
       - name: Install Linux Dependencies
         run: |
           sudo apt update
@@ -25,10 +30,16 @@ jobs:
 
       - name: Bootstrap
         env:
-          EXTRA_GN_ARGS: cc_wrapper=ccache
+          EXTRA_GN_ARGS: cc_wrapper="/usr/bin/ccache"
         run: ./bootstrap.sh
 
       - name: Build
+        if: success()
         env:
           CCACHE_SLOPPINESS: time_macros
         run: ./build.sh
+
+      - name: Remove src
+        uses: JesseTG/rm@v1.0.3
+        with:
+          path: src
