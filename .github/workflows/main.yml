@@ -24,7 +24,11 @@ jobs:
           max-size: '10G'
 
       - name: Bootstrap
+        env:
+          EXTRA_GN_ARGS: cc_wrapper=ccache
         run: ./bootstrap.sh
 
       - name: Build
+        env:
+          CCACHE_SLOPPINESS: time_macros
         run: ./build.sh

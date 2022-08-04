@@ -46,11 +46,8 @@ GN_ARGS="is_debug=false
 # Fix "AssertionError: java only allowed in android builds"
 GN_ARGS="$GN_ARGS enable_js_type_check=false"
 
-# Use ccache.
-GN_ARGS="$GN_ARGS cc_wrapper=\"env CCACHE_SLOPPINESS=time_macros ccache\""
-
 # Bootstrap gn.
-./tools/gn/bootstrap/bootstrap.py --gn-gen-args="$GN_ARGS"
+./tools/gn/bootstrap/bootstrap.py --gn-gen-args="$GN_ARGS $EXTRA_GN_ARGS"
 
 # Unbundle libraries.
 UNBUNDLE_LIBS="fontconfig freetype libdrm libjpeg libwebp opus snappy"
