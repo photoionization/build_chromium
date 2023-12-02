@@ -32,7 +32,7 @@ cd src
 ./third_party/node/update_node_binaries
 
 # PATH for ninja and clang.
-PATH=$SCRIPT_PATH/depot_tools:$PATH
+PATH=$SCRIPT_PATH/vendor/depot_tools:$PATH
 PATH=$SCRIPT_PATH/src/third_party/llvm-build/Release+Asserts/bin:$PATH
 
 GN_ARGS="is_debug=false
