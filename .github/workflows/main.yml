@@ -4,8 +4,13 @@ on: push
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ${{ matrix.os }}
     continue-on-error: false
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, macos-13]
 
     steps:
       - name: Checkout
@@ -13,25 +18,31 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Bootstrap
-        env:
-          EXTRA_GN_ARGS: import("${{ github.workspace }}/vendor/build_tools/third_party/goma.gn")
-          SECRET_FILE_CONTENT: ${{ secrets.GOMA_OAUTH2_CONFIG }}
+      - name: Use XCode 15
+        if: runner.os == 'macOS'
         run: |
-          printf "$SECRET_FILE_CONTENT" > ~/.goma_oauth2_config
-          ./goma.js
-          ./bootstrap.sh
-
-      - name: Clear Space
-        run: |
-          sudo rm -rf /usr/share/dotnet/ /usr/local/lib/android /var/lib/docker /opt/ghc
-          df -h $GITHUB_WORKSPACE
+          XCODE_APP=$(find /Applications -maxdepth 1 -type d -name "Xcode_15.*" -print -quit)
+          echo 'Using' $XCODE_APP
+          sudo xcode-select --switch $XCODE_APP
 
       - name: Install Linux Dependencies
+        if: runner.os == 'Linux'
         run: |
           sudo apt update
           sudo apt install gperf
           /usr/bin/Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
 
+      - name: Setup GOMA
+        env:
+          SECRET_FILE_CONTENT: ${{ secrets.GOMA_OAUTH2_CONFIG }}
+        run: |
+          printf "$SECRET_FILE_CONTENT" > ~/.goma_oauth2_config
+          ./goma.js
+
+      - name: Checkout Chromium
+        run: ./bootstrap.py --revision 121.0.6156.3
+
       - name: Build
-        run: ./build.sh "-j 200 content"
+        run: |
+          ./gn_gen.py --goma
+          ./build.py content

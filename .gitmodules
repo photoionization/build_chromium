@@ -5,3 +5,4 @@
 [submodule "build_tools"]
 	path = vendor/build_tools
 	url = https://github.com/electron/build-tools
+	shallow = true
