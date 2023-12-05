@@ -32,6 +32,10 @@ jobs:
           sudo apt install gperf
           /usr/bin/Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
 
+      - uses: actions/setup-python@v3
+        with:
+          python-version: '3.11'
+
       - name: Setup GOMA
         env:
           SECRET_FILE_CONTENT: ${{ secrets.GOMA_OAUTH2_CONFIG }}
@@ -40,9 +44,9 @@ jobs:
           ./goma.js
 
       - name: Checkout Chromium
-        run: ./bootstrap.py --revision 121.0.6156.3
+        run: ./bootstrap.py --revision 120.0.6099.62
 
       - name: Build
         run: |
           ./gn_gen.py --goma
-          ./build.py
+          ./build.py chrome views_examples_with_content

@@ -64,6 +64,7 @@ def main():
   add_depot_tools_to_path()
 
   args.arg += [
+      'enable_nacl=false',
       f'target_cpu="{args.target_cpu}"',
       f'target_os="{args.target_os}"',
   ]
