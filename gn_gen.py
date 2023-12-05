@@ -13,8 +13,10 @@ SRC_URL = 'https://chromium.googlesource.com/chromium/src.git'
 def add_depot_tools_to_path():
   os.environ['DEPOT_TOOLS_UPDATE'] = '0'
   os.environ['CHROMIUM_BUILDTOOLS_PATH'] = os.path.join(SRC_DIR, 'buildtools')
-  depot_tools_path = os.path.join(ROOT_DIR, 'vendor', 'depot_tools')
-  os.environ['PATH'] = depot_tools_path + os.pathsep + os.environ['PATH']
+  os.environ['PATH'] = os.pathsep.join([
+    os.path.join(SRC_DIR, 'third_party', 'ninja'),
+    os.path.join(ROOT_DIR, 'vendor', 'depot_tools'),
+  ]) + os.pathsep + os.environ['PATH']
 
 def current_os():
   if sys.platform.startswith('linux'):

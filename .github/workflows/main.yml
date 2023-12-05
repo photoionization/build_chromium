@@ -45,4 +45,4 @@ jobs:
       - name: Build
         run: |
           ./gn_gen.py --goma
-          ./build.py content
+          ./build.py
