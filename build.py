@@ -37,7 +37,9 @@ def main(args):
   try:
     subprocess.check_call([ 'ninja' ] + ninja_args)
   except KeyboardInterrupt:
-    pass
+    sys.exit(1)
+  except subprocess.CalledProcessError as e:
+    sys.exit(e.returncode)
 
 if __name__ == '__main__':
   main(sys.argv[1:])
