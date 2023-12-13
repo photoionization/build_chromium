@@ -69,7 +69,10 @@ def main():
       f'target_os="{args.target_os}"',
   ]
   if args.goma:
-    args.arg += [ f'import("{ROOT_DIR}/vendor/build_tools/third_party/goma.gn")' ]
+    args.arg += [
+        f'import("{ROOT_DIR}/vendor/build_tools/third_party/goma.gn")',
+        'use_goma_thin_lto=true',
+    ]
 
   gn_gen('out/Component', args.arg + [
       'is_component_build=true',
@@ -80,6 +83,7 @@ def main():
       'is_debug=false',
       'chrome_pgo_phase=0',
       'is_official_build=true',
+      'use_thin_lto=true',
   ])
   gn_gen('out/Debug', args.arg + [
       'is_component_build=true',
