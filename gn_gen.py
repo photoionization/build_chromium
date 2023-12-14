@@ -83,7 +83,8 @@ def main():
       'is_debug=false',
       'chrome_pgo_phase=0',
       'is_official_build=true',
-      'use_thin_lto=true',
+      # ThinLTO reduces linking time a lot but only supported on Linux.
+      f'use_thin_lto={"true" if args.target_os == "linux" else "false"}',
   ])
   gn_gen('out/Debug', args.arg + [
       'is_component_build=true',
