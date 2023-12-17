@@ -4,7 +4,7 @@ import os
 import subprocess
 import sys
 
-from gn_gen import SRC_DIR, add_depot_tools_to_path
+from gn_gen import SRC_DIR, add_depot_tools_to_path, current_os
 
 def has_target(args):
   if len(args) < 1:
@@ -22,6 +22,16 @@ def use_goma():
 
 def main(args):
   add_depot_tools_to_path()
+
+  # The python binary used for building is likely the downloaded binary in
+  # depot_tools, which does not import modules installed in user's python
+  # dir. Export the PYTHONPATH env so modules like pyyaml can be found.
+  if current_os() == 'win':
+    site_packages = []
+    for path in sys.path:
+      if path.endswith('site-packages'):
+        site_packages.append(path)
+    os.environ['PYTHONPATH'] = os.pathsep.join(site_packages)
 
   ninja_args = args
   # Set default target if every arg starts with dash.

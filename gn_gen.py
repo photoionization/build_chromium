@@ -12,11 +12,13 @@ SRC_URL = 'https://chromium.googlesource.com/chromium/src.git'
 
 def add_depot_tools_to_path():
   os.environ['DEPOT_TOOLS_UPDATE'] = '0'
+  os.environ['DEPOT_TOOLS_WIN_TOOLCHAIN'] = '0'
   os.environ['CHROMIUM_BUILDTOOLS_PATH'] = os.path.join(SRC_DIR, 'buildtools')
   os.environ['PATH'] = os.pathsep.join([
     os.path.join(SRC_DIR, 'third_party', 'ninja'),
     os.path.join(ROOT_DIR, 'vendor', 'depot_tools'),
-  ]) + os.pathsep + os.environ['PATH']
+    os.environ['PATH'],
+  ])
 
 def current_os():
   if sys.platform.startswith('linux'):
@@ -41,7 +43,8 @@ def current_cpu():
 
 def gn_gen(dir, args):
   joined_args = ' '.join(args)
-  process = subprocess.Popen([ 'gn', 'gen', dir, f'--args={joined_args}'],
+  gn_bin = 'gn.bat' if current_os() == 'win' else 'gn'
+  process = subprocess.Popen([ gn_bin, 'gen', dir, f'--args={joined_args}'],
                              stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                              text=True, cwd=SRC_DIR)
   for line in process.stdout:
@@ -83,8 +86,9 @@ def main():
       'is_debug=false',
       'chrome_pgo_phase=0',
       'is_official_build=true',
-      # ThinLTO reduces linking time a lot but only supported on Linux.
-      f'use_thin_lto={"true" if args.target_os == "linux" else "false"}',
+      # ThinLTO reduces linking time a lot but there is some problems with
+      # rust on mac.
+      f'use_thin_lto={"true" if args.target_os != "mac" else "false"}',
   ])
   gn_gen('out/Debug', args.arg + [
       'is_component_build=true',

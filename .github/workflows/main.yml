@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, macos-13]
+        os: [ubuntu-22.04, macos-13, windows-2022]
 
     steps:
       - name: Checkout
@@ -36,17 +36,21 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Install python dependencies
+        run: python -m pip install httplib2
+
+      - name: Checkout Chromium
+        run: python3 bootstrap.py --revision 122.0.6182.0
+
       - name: Setup GOMA
+        shell: bash
         env:
           SECRET_FILE_CONTENT: ${{ secrets.GOMA_OAUTH2_CONFIG }}
         run: |
           printf "$SECRET_FILE_CONTENT" > ~/.goma_oauth2_config
-          ./goma.js
-
-      - name: Checkout Chromium
-        run: ./bootstrap.py --revision 120.0.6099.62
+          node goma.js
 
       - name: Build
         run: |
-          ./gn_gen.py --goma
-          ./build.py chrome views_examples_with_content
+          python3 gn_gen.py --goma
+          python3 build.py chrome views_examples_with_content

@@ -24,7 +24,8 @@ def download_and_extract(url, extract_path):
     tar.extractall(path=extract_path, members=track_progress(tar))
 
 def cipd(root, package, version):
-  args = [ 'cipd', 'ensure', '-root', root, '-ensure-file', '-' ]
+  cipd_bin = 'cipd.bat' if current_os() == 'win' else 'cipd'
+  args = [ cipd_bin, 'ensure', '-root', root, '-ensure-file', '-' ]
   process = subprocess.Popen(args,
                              text=True,
                              stdin=subprocess.PIPE,
@@ -37,7 +38,8 @@ def cipd(root, package, version):
     raise ValueError('cipd failed.')
 
 def read_var_from_deps(deps_file, var):
-  result = subprocess.run([ 'gclient', 'getdep',
+  result = subprocess.run([ sys.executable,
+                            'third_party/depot_tools/gclient.py', 'getdep',
                             '--deps-file', deps_file,
                             '-r', var ],
                           capture_output=True, text=True)
@@ -121,6 +123,11 @@ def main():
     download_from_google_storage(
         'chromium-nodejs/16.13.0',
         sha_file='third_party/node/linux/node-linux-x64.tar.gz.sha1')
+    if args.target_os == 'win':
+      download_from_google_storage(
+          'chromium-browser-clang/rc',
+          extract=False,
+          sha_file='build/toolchain/win/rc/linux64/rc.sha1')
   elif host_os == 'mac':
     cipd('buildtools/mac', 'gn/gn/mac-${arch}', gn_version)
     download_from_google_storage(
@@ -131,12 +138,21 @@ def main():
         sha_file=f'tools/clang/dsymutil/bin/dsymutil.{host_cpu}.sha1',
         extract=False,
         output='tools/clang/dsymutil/bin/dsymutil')
+    if args.target_os == 'win':
+      download_from_google_storage(
+          'chromium-browser-clang/rc',
+          extract=False,
+          sha_file='build/toolchain/win/rc/mac/rc.sha1')
   elif host_os == 'win':
     cipd('buildtools/win', 'gn/gn/windows-amd64', gn_version)
     download_from_google_storage(
         'chromium-nodejs/16.13.0',
         extract=False,
         sha_file='third_party/node/win/node.exe.sha1')
+    download_from_google_storage(
+        'chromium-browser-clang/rc',
+        extract=False,
+        sha_file='build/toolchain/win/rc/win/rc.exe.sha1')
 
   # Download Linux dependencies.
   if host_os == 'linux':
