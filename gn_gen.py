@@ -62,6 +62,8 @@ def main():
                       help='Pass arguments to GN')
   parser.add_argument('--goma', action='store_true', default=False,
                       help='Build with GOMA')
+  parser.add_argument('--config', choices=[ 'Component', 'Release', 'Debug' ],
+                      help='Which config to generate')
   args = parser.parse_args()
 
   add_depot_tools_to_path()
@@ -77,23 +79,29 @@ def main():
         'use_goma_thin_lto=true',
     ]
 
-  gn_gen('out/Component', args.arg + [
-      'is_component_build=true',
-      'is_debug=false',
-  ])
-  gn_gen('out/Release', args.arg + [
-      'is_component_build=false',
-      'is_debug=false',
-      'chrome_pgo_phase=0',
-      'is_official_build=true',
-      # ThinLTO reduces linking time a lot but there is some problems with
-      # rust on mac.
-      f'use_thin_lto={"true" if args.target_os != "mac" else "false"}',
-  ])
-  gn_gen('out/Debug', args.arg + [
-      'is_component_build=true',
-      'is_debug=true',
-  ])
+  generate_all = not args.config
+
+  if generate_all or args.config == 'Component':
+    gn_gen('out/Component', args.arg + [
+        'is_component_build=true',
+        'is_debug=false',
+    ])
+  if generate_all or args.config == 'Release':
+    gn_gen('out/Release', args.arg + [
+        'is_component_build=false',
+        'is_debug=false',
+        'chrome_pgo_phase=0',
+        'is_official_build=true',
+        # ThinLTO reduces linking time a lot but there are some problems with
+        # rust on mac:
+        # https://chromium-review.googlesource.com/c/chromium/src/+/5125087
+        f'use_thin_lto={"true" if args.target_os != "mac" else "false"}',
+    ])
+  if generate_all or args.config == 'Debug':
+    gn_gen('out/Debug', args.arg + [
+        'is_component_build=true',
+        'is_debug=true',
+    ])
 
 if __name__ == '__main__':
   main()
