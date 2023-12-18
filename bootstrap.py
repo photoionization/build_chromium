@@ -158,7 +158,11 @@ def main():
   if host_os == 'linux':
     subprocess.check_call([ sys.executable,
                             'build/linux/sysroot_scripts/install-sysroot.py',
-                            '--arch', 'amd64' ])
+                            '--arch', host_cpu ])
+    if host_cpu != args.target_cpu:
+      subprocess.check_call([ sys.executable,
+                              'build/linux/sysroot_scripts/install-sysroot.py',
+                              '--arch', args.target_cpu ])
 
 if __name__ == '__main__':
   exit(main())
