@@ -13,8 +13,8 @@ def use_goma(args):
 
 def main():
   parser = argparse.ArgumentParser(description='Build Chromium')
-  parser.add_argument('targets', nargs='+', default=[ 'views_examples' ],
-                      help='Target build')
+  parser.add_argument('targets', nargs='*', default=[ 'views_examples' ],
+                      help='The targets to build')
   parser.add_argument('-C', dest='out_dir',
                       default=os.path.join(SRC_DIR, 'out/Component'),
                       help='Which config to build')
