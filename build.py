@@ -1,26 +1,25 @@
 #!/usr/bin/env python3
 
+import argparse
 import os
 import subprocess
 import sys
 
 from gn_gen import SRC_DIR, add_depot_tools_to_path, current_os
 
-def has_target(args):
-  if len(args) < 1:
-    return False
-  if not args[0].startswith('-'):
-    return True
-  for i in range(1, len(args)):
-    if not args[i].startswith('-') and not args[i - 1].startswith('-'):
-      return True
-  return False
-
-def use_goma():
-  with open(os.path.join(SRC_DIR, 'out/Component/args.gn'), 'r') as f:
+def use_goma(args):
+  with open(os.path.join(args.out_dir, 'args.gn'), 'r') as f:
     return 'goma.gn' in f.read()
 
-def main(args):
+def main():
+  parser = argparse.ArgumentParser(description='Build Chromium')
+  parser.add_argument('targets', nargs='+', default=[ 'views_examples' ],
+                      help='Target build')
+  parser.add_argument('-C', dest='out_dir',
+                      default=os.path.join(SRC_DIR, 'out/Component'),
+                      help='Which config to build')
+  args, unknown_args = parser.parse_known_args()
+
   add_depot_tools_to_path()
 
   # The python binary used for building is likely the downloaded binary in
@@ -33,23 +32,17 @@ def main(args):
         site_packages.append(path)
     os.environ['PYTHONPATH'] = os.pathsep.join(site_packages)
 
-  ninja_args = args
-  # Set default target if every arg starts with dash.
-  if not has_target(args):
-    ninja_args += [ 'views_examples' ]
-  # Set default out dir unless -C is specified.
-  if '-C' not in args:
-    ninja_args += [ '-C', os.path.join(SRC_DIR, 'out/Component') ]
+  ninja_args = [ 'ninja',  '-C', args.out_dir ]
   # Build with many jobs if goma is used.
-  if use_goma():
+  if use_goma(args):
     ninja_args += [ '-j', '200' ]
 
   try:
-    subprocess.check_call([ 'ninja' ] + ninja_args)
+    subprocess.check_call(ninja_args + unknown_args + args.targets)
   except KeyboardInterrupt:
     sys.exit(1)
   except subprocess.CalledProcessError as e:
     sys.exit(e.returncode)
 
 if __name__ == '__main__':
-  main(sys.argv[1:])
+  main()
