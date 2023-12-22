@@ -2,14 +2,45 @@
 
 import argparse
 import os
+import platform
 import subprocess
 import sys
 import tarfile
 import urllib.request
 
-from gn_gen import ROOT_DIR, add_depot_tools_to_path, current_cpu, current_os
-
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 CHROMIUM_URL = 'https://github.com/photoionization/chromium_source_tarball/releases/download'
+
+def add_depot_tools_to_path(src_dir):
+  os.environ['DEPOT_TOOLS_UPDATE'] = '0'
+  os.environ['DEPOT_TOOLS_WIN_TOOLCHAIN'] = '0'
+  os.environ['CHROMIUM_BUILDTOOLS_PATH'] = os.path.join(src_dir, 'buildtools')
+  os.environ['PATH'] = os.pathsep.join([
+    os.path.join(src_dir, 'third_party', 'ninja'),
+    os.path.join(ROOT_DIR, 'vendor', 'depot_tools'),
+    os.environ['PATH'],
+  ])
+
+def current_os():
+  if sys.platform.startswith('linux'):
+    return 'linux'
+  elif sys.platform.startswith('win'):
+    return 'win'
+  elif sys.platform == 'darwin':
+    return 'mac'
+  else:
+    raise ValueError(f'Unsupported platform: {sys.platform}')
+
+def current_cpu():
+  arch = platform.machine()
+  if arch == 'AMD64' or arch == 'x86_64' or arch == 'x64':
+    return 'x64'
+  elif arch == 'ARM64':
+    return 'arm64'
+  elif arch.startswith('ARM'):
+    return 'arm'
+  else:
+    raise ValueError(f'Unrecognized CPU architecture: {arch}')
 
 def download_and_extract(url, extract_path):
   def track_progress(members):
@@ -69,7 +100,8 @@ def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('--revision', help='The revision to checkout')
   parser.add_argument('--tarball-url', help='Path to Chromium source tarball')
-  parser.add_argument('--src-dir', help='The path of src dir', default='src')
+  parser.add_argument('--src-dir', default=os.path.join(ROOT_DIR, 'src'),
+                      help='The path of src dir')
   parser.add_argument('--target-cpu', default=current_cpu(),
                       help='Target CPU architecture')
   parser.add_argument('--target-os', default=current_os(),
@@ -101,7 +133,7 @@ def main():
   host_os = current_os()
   host_cpu = current_cpu()
 
-  add_depot_tools_to_path()
+  add_depot_tools_to_path(args.src_dir)
   os.chdir(args.src_dir)
 
   # Download compilers.
