@@ -60,10 +60,6 @@ def main():
         'is_debug=false',
         'chrome_pgo_phase=0',
         'is_official_build=true',
-        # ThinLTO reduces linking time a lot but there are some problems with
-        # rust on mac:
-        # https://chromium-review.googlesource.com/c/chromium/src/+/5125087
-        f'use_thin_lto={"true" if args.target_os != "mac" else "false"}',
     ])
   if generate_all or args.config == 'Debug':
     gn_gen(args.src_dir, 'out/Debug', args.arg + [
