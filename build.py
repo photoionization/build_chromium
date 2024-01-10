@@ -7,12 +7,12 @@ import sys
 
 from bootstrap import ROOT_DIR, add_depot_tools_to_path, current_os
 
-def use_goma(args):
+def use_reclient(args):
   args_gn = os.path.join(args.out_dir, 'args.gn')
   if not os.path.isabs(args_gn):
     args_gn = os.path.join(args.src_dir, args_gn)
   with open(args_gn, 'r') as f:
-    return 'goma.gn' in f.read()
+    return 'use_remoteexec = true' in f.read()
 
 def main():
   parser = argparse.ArgumentParser(description='Build Chromium')
@@ -36,10 +36,16 @@ def main():
         site_packages.append(path)
     os.environ['PYTHONPATH'] = os.pathsep.join(site_packages)
 
-  ninja_args = [ 'ninja',  '-C', args.out_dir ]
-  # Build with many jobs if goma is used.
-  if use_goma(args):
+  autoninja = 'autoninja.bat' if current_os() == 'win' else 'autoninja'
+  ninja_args = [ autoninja,  '-C', args.out_dir ]
+
+  if use_reclient(args):
     ninja_args += [ '-j', '200' ]
+
+    build_tools = os.path.join(ROOT_DIR, 'vendor/build_tools')
+    credentials_helper = os.path.join(build_tools, 'third_party/reclient/electron-rbe-credential-helper')
+    os.environ['RBE_service'] = 'rbe.notgoma.com:443'
+    os.environ['RBE_experimental_credentials_helper'] = credentials_helper
 
   try:
     subprocess.check_call(ninja_args + unknown_args + args.targets,

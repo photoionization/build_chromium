@@ -140,6 +140,10 @@ def main():
   subprocess.check_call([ sys.executable, 'tools/clang/scripts/update.py' ])
   subprocess.check_call([ sys.executable, 'tools/rust/update_rust.py' ])
 
+  # Linux node is always downloaded for remote action.
+  download_from_google_storage(
+      'chromium-nodejs/16.13.0',
+      sha_file='third_party/node/linux/node-linux-x64.tar.gz.sha1')
   # Download util binaries.
   cipd('third_party/devtools-frontend/src/third_party/esbuild',
        'infra/3pp/tools/esbuild/${platform}',
@@ -149,12 +153,13 @@ def main():
        'infra/3pp/tools/ninja/${platform}',
        read_var_from_deps('DEPS',
                           'src/third_party/ninja:infra/3pp/tools/ninja/${platform}'))
+  cipd('buildtools/reclient',
+       'infra/rbe/client/${platform}',
+       read_var_from_deps('DEPS',
+                          'src/buildtools/reclient:infra/rbe/client/${platform}'))
   gn_version = read_var_from_deps('DEPS', 'src/buildtools/mac:gn/gn/mac-${arch}')
   if host_os == 'linux':
     cipd('buildtools/linux64', 'gn/gn/linux-${arch}', gn_version)
-    download_from_google_storage(
-        'chromium-nodejs/16.13.0',
-        sha_file='third_party/node/linux/node-linux-x64.tar.gz.sha1')
     if args.target_os == 'win':
       download_from_google_storage(
           'chromium-browser-clang/rc',
