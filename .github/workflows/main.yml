@@ -42,13 +42,15 @@ jobs:
       - name: Checkout Chromium
         run: python3 bootstrap.py --revision 122.0.6226.2
 
-      - name: Setup Reclient
+      - name: Setup GOMA
+        shell: bash
         env:
-          ELECTRON_RBE_JWT: ${{ secrets.RBE_SECRET }}
+          SECRET_FILE_CONTENT: ${{ secrets.GOMA_OAUTH2_CONFIG }}
         run: |
-          node reclient.js login
+          printf "$SECRET_FILE_CONTENT" > ~/.goma_oauth2_config
+          node goma.js
 
       - name: Build
         run: |
-          python3 gn_gen.py --reclient
+          python3 gn_gen.py --goma
           python3 build.py chrome views_examples_with_content

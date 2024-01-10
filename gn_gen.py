@@ -30,6 +30,8 @@ def main():
                       help='Pass arguments to GN')
   parser.add_argument('--reclient', action='store_true', default=False,
                       help='Build with reclient')
+  parser.add_argument('--goma', action='store_true', default=False,
+                      help='Build with GOMA')
   parser.add_argument('--config', choices=[ 'Component', 'Release', 'Debug' ],
                       help='Which config to generate')
   args = parser.parse_args()
@@ -51,6 +53,7 @@ def main():
         os.path.join(ROOT_DIR, 'vendor/engflow_reclient_configs/configure_reclient.py'),
         '--force',
         '--src_dir', args.src_dir ])
+    return
 
   args.arg += [
       'enable_nacl=false',
@@ -59,6 +62,11 @@ def main():
   ]
   if args.reclient:
     args.arg += [ 'use_remoteexec=true' ]
+  elif args.goma:
+    args.arg += [
+        f'import("{ROOT_DIR}/vendor/build_tools/third_party/goma.gn")',
+        'use_goma_thin_lto=true',
+    ]
 
   generate_all = not args.config
 
