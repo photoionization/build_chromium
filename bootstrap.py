@@ -13,13 +13,16 @@ CHROMIUM_URL = 'https://github.com/photoionization/chromium_source_tarball/relea
 
 def add_depot_tools_to_path(src_dir):
   os.environ['DEPOT_TOOLS_UPDATE'] = '0'
-  os.environ['DEPOT_TOOLS_WIN_TOOLCHAIN'] = '0'
   os.environ['CHROMIUM_BUILDTOOLS_PATH'] = os.path.join(src_dir, 'buildtools')
   os.environ['PATH'] = os.pathsep.join([
     os.path.join(src_dir, 'third_party', 'ninja'),
     os.path.join(ROOT_DIR, 'vendor', 'depot_tools'),
     os.environ['PATH'],
   ])
+  # Download Windows toolchain, which is required for using reclient.
+  os.environ['DEPOT_TOOLS_WIN_TOOLCHAIN'] = '1'
+  os.environ['DEPOT_TOOLS_WIN_TOOLCHAIN_BASE_URL'] = 'https://dev-cdn.electronjs.org/windows-toolchains/_'
+  os.environ['GYP_MSVS_HASH_27370823e7'] = '28622d16b1'
 
 def current_os():
   if sys.platform.startswith('linux'):
@@ -135,6 +138,11 @@ def main():
 
   add_depot_tools_to_path(args.src_dir)
   os.chdir(args.src_dir)
+
+  # Must execute before downloading clang.
+  if host_os == 'win':
+    subprocess.check_call([ sys.executable,
+                            'build/vs_toolchain.py', 'update', '--force' ])
 
   # Download compilers.
   subprocess.check_call([ sys.executable, 'tools/clang/scripts/update.py' ])

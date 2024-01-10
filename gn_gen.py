@@ -53,7 +53,6 @@ def main():
         os.path.join(ROOT_DIR, 'vendor/engflow_reclient_configs/configure_reclient.py'),
         '--force',
         '--src_dir', args.src_dir ])
-    return
 
   args.arg += [
       'enable_nacl=false',
