@@ -3,6 +3,7 @@
 import argparse
 import os
 import platform
+import re
 import subprocess
 import sys
 import tarfile
@@ -83,6 +84,15 @@ def read_var_from_deps(deps_file, var):
     raise ValueError('gclient getdep failed.')
   return result.stdout
 
+def search_pattern(filename, pattern):
+  with open(filename, 'r') as f:
+    content = f.read()
+    match = re.search(pattern, content)
+    if match:
+      return match.group(1)
+    else:
+      raise ValueError(f'Failed to match pattern: {pattern}')
+
 def download_from_google_storage(
     bucket, sha_file=None, sha1=None, extract=True, output=None):
   args = [ sys.executable,
@@ -149,8 +159,9 @@ def main():
   subprocess.check_call([ sys.executable, 'tools/rust/update_rust.py' ])
 
   # Linux node is always downloaded for remote action.
+  node_version = search_pattern('DEPS', 'chromium-nodejs/([0-9.]*)')
   download_from_google_storage(
-      'chromium-nodejs/16.13.0',
+      f'chromium-nodejs/{node_version}',
       sha_file='third_party/node/linux/node-linux-x64.tar.gz.sha1')
   # Download util binaries.
   cipd('third_party/devtools-frontend/src/third_party/esbuild',
@@ -176,7 +187,7 @@ def main():
   elif host_os == 'mac':
     cipd('buildtools/mac', 'gn/gn/mac-${arch}', gn_version)
     download_from_google_storage(
-        'chromium-nodejs/16.13.0',
+        f'chromium-nodejs/{node_version}',
         sha_file=f'third_party/node/mac/node-darwin-{host_cpu}.tar.gz.sha1')
     download_from_google_storage(
         'chromium-browser-clang',
@@ -191,7 +202,7 @@ def main():
   elif host_os == 'win':
     cipd('buildtools/win', 'gn/gn/windows-amd64', gn_version)
     download_from_google_storage(
-        'chromium-nodejs/16.13.0',
+        f'chromium-nodejs/{node_version}',
         extract=False,
         sha_file='third_party/node/win/node.exe.sha1')
     download_from_google_storage(

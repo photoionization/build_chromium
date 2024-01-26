@@ -40,7 +40,7 @@ jobs:
         run: python -m pip install httplib2
 
       - name: Checkout Chromium
-        run: python3 bootstrap.py --revision 122.0.6226.2
+        run: python3 bootstrap.py --revision 123.0.6262.5
 
       - name: Setup GOMA
         shell: bash
