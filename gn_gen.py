@@ -34,6 +34,7 @@ def main():
                       help='Build with GOMA')
   parser.add_argument('--config', choices=[ 'Component', 'Release', 'Debug' ],
                       help='Which config to generate')
+  parser.add_argument('--custom-config', help='Generate custom config')
   args = parser.parse_args()
 
   add_depot_tools_to_path(args.src_dir)
@@ -55,10 +56,11 @@ def main():
         '--src_dir', args.src_dir ])
 
   args.arg += [
-      'enable_nacl=false',
       f'target_cpu="{args.target_cpu}"',
       f'target_os="{args.target_os}"',
   ]
+  if not args.custom_config:
+    args.arg += [ 'enable_nacl=false' ]
   if args.reclient:
     args.arg += [ 'use_remoteexec=true' ]
   elif args.goma:
@@ -67,7 +69,7 @@ def main():
         'use_goma_thin_lto=true',
     ]
 
-  generate_all = not args.config
+  generate_all = not args.config and not args.custom_config
 
   if generate_all or args.config == 'Component':
     gn_gen(args.src_dir, 'out/Component', args.arg + [
@@ -86,6 +88,8 @@ def main():
         'is_component_build=true',
         'is_debug=true',
     ])
+  if args.custom_config:
+    gn_gen(args.src_dir, f'out/{args.custom_config}', args.arg)
 
 if __name__ == '__main__':
   main()
