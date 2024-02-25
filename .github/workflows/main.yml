@@ -13,6 +13,13 @@ jobs:
         os: [ubuntu-22.04, macos-13, windows-2022]
 
     steps:
+      - name: Mount workspace to /mnt
+        if: runner.os == 'Linux'
+        run: |
+          sudo mkdir /mnt/work
+          sudo mount --bind /mnt/work ${{ github.workspace }}
+          sudo chown runner:runner ${{ github.workspace }}
+
       - name: Checkout
         uses: actions/checkout@v3
         with:
@@ -40,17 +47,14 @@ jobs:
         run: python -m pip install httplib2
 
       - name: Checkout Chromium
-        run: python3 bootstrap.py --revision 123.0.6262.5
+        run: python3 bootstrap.py --revision 124.0.6315.2
 
-      - name: Setup GOMA
-        shell: bash
+      - name: Setup Reclient
         env:
-          SECRET_FILE_CONTENT: ${{ secrets.GOMA_OAUTH2_CONFIG }}
-        run: |
-          printf "$SECRET_FILE_CONTENT" > ~/.goma_oauth2_config
-          node goma.js
+          ELECTRON_RBE_JWT: ${{ secrets.RBE_SECRET }}
+        run: node reclient.js login
 
       - name: Build
         run: |
-          python3 gn_gen.py --goma
-          python3 build.py chrome views_examples_with_content
+          python3 gn_gen.py --reclient
+          python3 build.py views_examples_with_content
