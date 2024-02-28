@@ -14,7 +14,7 @@ CHROMIUM_URL = 'https://github.com/photoionization/chromium_source_tarball/relea
 
 def add_depot_tools_to_path(src_dir):
   os.environ['DEPOT_TOOLS_UPDATE'] = '0'
-  os.environ['CHROMIUM_BUILDTOOLS_PATH'] = os.path.join(src_dir, 'buildtools')
+  os.environ['CHROMIUM_BUILDTOOLS_PATH'] = os.path.join(os.path.abspath(src_dir), 'buildtools')
   os.environ['PATH'] = os.pathsep.join([
     os.path.join(src_dir, 'third_party', 'ninja'),
     os.path.join(ROOT_DIR, 'vendor', 'depot_tools'),
