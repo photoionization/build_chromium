@@ -27,6 +27,6 @@ if (!fs.existsSync(nodeModulesDir)) {
 const reclient = require(path.join(buildToolsDir, 'src/utils/reclient'))
 reclient.downloadAndPrepare({})
 if (process.argv.length > 2) {
-  cp.execFileSync(reclient.helperPath, process.argv.slice(2), {stdio: 'inherit'})
+  cp.execFileSync(reclient.helperPath({}), process.argv.slice(2), {stdio: 'inherit'})
   process.exit(0)
 }

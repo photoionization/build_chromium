@@ -297,6 +297,11 @@ class ReclientConfigurator:
             f'{Paths.reclient_cfgs_dir}/{tool}/rewrapper_{host_os}.cfg',
             rewrapper_cfg, source_cfg_paths)
 
+        # Write "large" configs to the expected location.
+        ReclientCfg.write_to_file(
+            f'{Paths.reclient_cfgs_dir}/{tool}/rewrapper_{host_os}_large.cfg',
+            rewrapper_cfg, source_cfg_paths)
+
 
 class Paths:
     script_dir = ''
