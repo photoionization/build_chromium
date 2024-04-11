@@ -24,6 +24,7 @@ def add_depot_tools_to_path(src_dir):
   os.environ['DEPOT_TOOLS_WIN_TOOLCHAIN'] = '1'
   os.environ['DEPOT_TOOLS_WIN_TOOLCHAIN_BASE_URL'] = 'https://dev-cdn.electronjs.org/windows-toolchains/_'
   os.environ['GYP_MSVS_HASH_27370823e7'] = '28622d16b1'
+  os.environ['GYP_MSVS_HASH_7393122652'] = '3ba76c5c20'
 
 def current_os():
   if sys.platform.startswith('linux'):
